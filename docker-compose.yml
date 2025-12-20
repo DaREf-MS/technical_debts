@@ -1,0 +1,75 @@
+services:
+  nginx:
+    restart: always
+    build: ./nginx
+    ports:
+    - "80:80"
+    volumes:
+      - ./web/src/static:/static
+    links:
+      - web:web
+
+  web:
+    restart: always
+    build: ./web
+    links:
+      - postgres:postgres
+    volumes:
+      - ./web:/app
+    environment:
+      FLASK_ENV: dev
+      DEBUG: True
+      DATABASE_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+    command: >
+      gunicorn --timeout 1800 --reload -w 1 -b :8000 src.app:app
+
+  web-unit-tests: 
+    build: ./web
+    links:
+      - postgres:postgres
+    volumes:
+      - ./web:/app
+    environment:
+      FLASK_ENV: dev
+      DEBUG: True
+      DATABASE_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+    command: >
+      pytest --cov=src --show-capture=all unit_tests --cov-report=term-missing
+
+  postgres:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    expose:
+      - "5433"
+    hostname: postgres
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db-data:

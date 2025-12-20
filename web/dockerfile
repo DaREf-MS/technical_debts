@@ -1,0 +1,45 @@
+# FROM python:3.10
+# 
+# WORKDIR /app
+# 
+# COPY requirements.txt requirements.txt
+# RUN python -m pip install --upgrade pip && \
+#     python -m pip install -r requirements.txt
+# 
+# COPY . .
+
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+# source: https://stackoverflow.com/questions/66733891/how-to-install-java-8-using-dockerfile-in-python3-8-slim-buster-base-image
+RUN apt update
+RUN apt upgrade -y
+RUN apt install openjdk-8-jdk -y
+RUN apt install software-properties-common -y
+RUN apt install git -y
+RUN apt install wget -y
+RUN apt install unzip -y
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt update
+RUN apt install python3.10 -y
+
+# source: https://stackoverflow.com/questions/11583714/install-psycopg2-on-ubuntu
+RUN apt install libpq-dev -y
+RUN apt install python3-pip -y
+RUN apt clean
+RUN rm -rf /var/lib/apt/lists/*
+
+# https://pmd.github.io/
+RUN mkdir /pmd 
+WORKDIR /pmd
+RUN wget https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.18.0/pmd-dist-7.18.0-bin.zip
+RUN unzip pmd-dist-7.18.0-bin.zip
+RUN alias pmd="/pmd/pmd-bin-7.18.0/bin/pmd"
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r requirements.txt
+
+COPY . .

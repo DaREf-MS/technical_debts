@@ -1,0 +1,63 @@
+@startuml recomm_service
+hide circle
+skinparam classAttributeIconSize 0
+title Service, contrôlleur & générateur
+
+
+class "<<Singleton>>\nRecommendationController" as RecommendationController {
+    - {static} singleton : RecommendationController
+    - compatibility : CompatibilityService
+    - recommendation : RecommendationService
+    + {static} singleton() : RecommendationController
+    + ctor()
+    - load_service()
+    + get_recommendations(file_list, complexities, entities, duplication) : RecommendationReport
+}
+
+class CompatibilityService {
+    + convert_func_complexity_objects(func_list) : dict<...>
+    + convert_file_complexity_objects(file_list) : dict<...>
+    + convert_entity_objects(entity_list) : dict<...>
+}
+
+class RecommendationService {
+    - generator : RecommendationGenerator
+    + ctor(generator)
+    + get_global_summary(total_file_nb, complexities, entities, duplications) : Summary
+    + get_file_complexity_summary(summary, complexity) : Summary
+    + get_file_summary(filename, complexities, entities, duplications) : Summary
+    + get_recommendations(file_list, complexities, entities, duplications) : RecommendationReport
+}
+
+class RecommendationGenerator {
+    + generate(problem, recommendation, mapping, is_problem) : Pair<str, str>
+    + global_risk(complexities) : Pair<str, str>
+    + global_duplication(duplications) : Pair<str, str>
+    + global_bug(entities, total_file_nb) : Pair<str, str>
+    + file_avg_risk(complexity) : Pair<str, str>
+    + file_func_risk(complexity) : Pair<str, str>
+    + file_func_nb(complexity) : Pair<str, str>
+}
+
+class RecommendationReport {
+    -global : Summary
+    -files : list<Summary>
+    + ctor(global_summary, file_summaries)
+}
+
+class "RecommendationReport.Summary" as RRSummary {
+    + subject : str
+    + problems : set<str>
+    + recommendations : set<str>
+    + ctor(subject)
+    + add(problem_recomm) : Summary
+}
+
+RecommendationController -right-> RecommendationService
+RecommendationController -down-> CompatibilityService
+RecommendationService .down.> RecommendationReport : "Crée"
+RecommendationService .down.> RRSummary : "Crée"
+RecommendationReport -right-o RRSummary : "Agrégation"
+RecommendationService -right-> RecommendationGenerator
+
+@enduml

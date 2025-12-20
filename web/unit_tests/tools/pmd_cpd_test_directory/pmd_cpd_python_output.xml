@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd xmlns="https://pmd-code.org/schema/cpd-report"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         pmdVersion="7.18.0"
+         timestamp=""
+         version="1.0.0"
+         xsi:schemaLocation="https://pmd-code.org/schema/cpd-report https://pmd.github.io/schema/cpd-report_1_0_0.xsd">
+   <file path="/app/unit_tests/tools/pmd_cpd_test_directory/file_a.py"
+         totalNumberOfTokens="141"/>
+   <file path="/app/unit_tests/tools/pmd_cpd_test_directory/file_b.py"
+         totalNumberOfTokens="141"/>
+   <duplication lines="8" tokens="27">
+      <file begintoken="22"
+            column="5"
+            endcolumn="23"
+            endline="19"
+            endtoken="48"
+            line="12"
+            path="/app/unit_tests/tools/pmd_cpd_test_directory/file_a.py"/>
+      <file begintoken="164"
+            column="5"
+            endcolumn="23"
+            endline="19"
+            endtoken="190"
+            line="12"
+            path="/app/unit_tests/tools/pmd_cpd_test_directory/file_b.py"/>
+      <codefragment><![CDATA[    numbers = [1, 2, 3]
+    total = 0
+    for n in numbers:
+        total += n
+    return total
+
+
+def duplicate_three():
+]]></codefragment>
+   </duplication>
+   <duplication lines="5" tokens="27">
+      <file begintoken="108"
+            column="30"
+            endcolumn="11"
+            endline="39"
+            endtoken="134"
+            line="35"
+            path="/app/unit_tests/tools/pmd_cpd_test_directory/file_a.py"/>
+      <file begintoken="250"
+            column="30"
+            endcolumn="11"
+            endline="39"
+            endtoken="276"
+            line="35"
+            path="/app/unit_tests/tools/pmd_cpd_test_directory/file_b.py"/>
+      <codefragment><![CDATA[    print("=== file_a.py ===")
+    print("duplicate_one():", duplicate_one())
+    print("duplicate_two():", duplicate_two())
+    print("duplicate_three():", duplicate_three())
+    print("unique_function_a():", unique_function_a())
+]]></codefragment>
+   </duplication>
+</pmd-cpd>

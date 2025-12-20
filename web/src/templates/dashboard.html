@@ -1,0 +1,192 @@
+{% extends "_base.html" %}
+
+{% block content %}
+
+{% if repository %}
+<div class="container my-4">
+	<!-- Header -->
+	<div class="text-center mb-4">
+		<h1>Repository Dashboard</h1>
+		<p class="lead">
+			Showing dashboard for
+			<strong>{{ repository.owner }}</strong>/<strong>{{ repository.name }}</strong>
+		</p>
+		<div class="mt-3 d-flex justify-content-center">
+			<a href="{{ url_for('index') }}"
+       			class="btn btn-outline-secondary me-2">
+        		<i class="bi bi-arrow-left"></i> Back to main page
+    		</a>
+
+			<a href="{{ url_for('debt_evolution', owner=repository.owner, name=repository.name) }}"
+				class="btn btn-outline-primary">
+				<i class="bi bi-graph-up"></i> View Debt Evolution
+			</a>
+		</div>
+	</div>
+
+	<!-- Filters Section -->
+	<div class="card mb-4 shadow-sm">
+		<div class="card-body">
+			<div class="row g-3 d-flex align-items-center mb-2">
+				<div class="col-md-4">
+					<label class="form-label">Branch</label>
+					<select class="form-select cursor-pointer" id="branch_select">
+						{% for branch in branches %}
+							<option data-id="{{ branch.id }}" {% if loop.first %}selected{% endif %}>
+								{{ branch.name }}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-md-5">
+					<label class="form-label">Commit</label>
+					<select class="form-select cursor-pointer" id="commit_select">
+
+					</select>
+				</div>
+			</div>
+			<div class="row g-3 align-items-center mt-2">
+				<div class="col-md-4 d-flex align-items-end">
+					<div class="form-check form-switch">
+						<input class="form-check-input cursor-pointer" type="checkbox" id="include_identifiable_identities_input" checked>
+						<label class="form-check-label text-decoration-underline" for="include_identifiable_identities_input" id="include_identifiable_identities_label">Inclure Identitées Remarquables</label>
+					</div>
+				</div>
+				<div class="col-md-3 d-flex align-items-end">
+					<div class="form-check form-switch">
+						<input class="form-check-input cursor-pointer" type="checkbox" id="include_complexity_input" checked>
+						<label class="form-check-label" for="include_complexity_input">Inclure Complexité</label>
+					</div>
+				</div>
+				<div class="col-md-3 d-flex align-items-end">
+					<div class="form-check form-switch">
+						<input class="form-check-input cursor-pointer" type="checkbox" id="include_duplication_input" checked>
+						<label class="form-check-label" for="include_duplication_input">Inclure Duplication Code</label>
+					</div>
+				</div>
+			</div>
+			<div class="row g-3 align-items-center mt-2">
+				<div class="col-md-8">
+					<div id="commit-info" class="text-muted small">
+						Commit: <span id="commit-sha">-</span> | Date: <span id="commit-date">-</span>
+						<div id="commit-message" class="text-muted small mt-1 text-truncate" style="max-width: 100%;">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4 d-flex align-items-end ms-auto">
+					<button class="btn btn-primary w-100" onclick="display_metrics()">Calculate Metrics</button>
+				</div>
+				<div class="col-md-4 d-flex align-items-end ms-auto">
+					<button class="btn btn-primary w-100" onclick="export_to_json()">Export to JSON</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Global Statistics Table Section -->
+<div class="container my-4">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h3 class="card-title fw-bold mb-4">Global Statistics</h3>
+			<table class="table" style="text-align: center;">
+				<thead>
+					<tr>
+						<th scope="col"><i class="bi bi-exclamation-triangle-fill" style="color: red;"></i> Total Technical Debt</th>
+						<th scope="col"><i class="bi bi-graph-up"></i> High Risk Files</th>
+						<th scope="col"><i class="bi bi-check-lg"></i> Total Todo-Fixme</th>
+						<th scope="col"><i class="bi bi-file-text-fill"></i> Total Duplications</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td id="total-technical-debt"></td>
+						<td id="high-risk-files"></td>
+						<td id="--todo-fixme"></td>
+						<td id="--duplications"></td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- <div class="card-body">
+				<h4 class="card-title">Total Technical Debt</h4>
+				<p id="total-technical-debt" class="card-text"></p>
+			</div>
+			<div class="card-body">
+				<h4 class="card-title">High Risk Files</h4>
+				<p id="high-risk-files" class="card-text"></p>
+			</div> -->
+		</div>
+	</div>
+</div>
+
+<!-- Recommendations Table Section -->
+<div class="container my-4">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h3 class="card-title fw-bold mb-4">Recommendations</h3>
+			<div class="table-responsive">
+				<table id="recommendations-table" data-toggle="table" data-detail-view="true"
+					data-detail-formatter="recommendationsDetailFormatter">
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Technical Debt Metrics Table Section -->
+<div class="container my-4">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h3 class="card-title fw-bold mb-4">Technical Debt Metrics</h3>
+			<div class="table-responsive">
+				<table id="metrics-table"
+					data-toggle="table"
+					data-pagination="true"
+					data-page-size="10"
+					data-page-list="[10, 25, 50, 100]"
+					data-detail-view="true"
+					data-detail-formatter="detailFormatter">
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Code Duplication Table Section -->
+<div class="container my-4">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h3 class="card-title fw-bold mb-4">Code Duplication Overview</h3>
+			<div class="table-responsive">
+				<table id="duplication-table"
+					data-toggle="table"
+					data-pagination="true"
+					data-page-size="10"
+					data-page-list="[10, 25, 50, 100]"
+					data-detail-view="true"
+					data-detail-formatter="detailFormatter">
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Debt evolution diagram -->
+{% else %}
+<div class="container my-4">
+	<div class="text-center mb-4">
+		<h1>Repository Dashboard</h1>
+		<p class="lead">
+			Repository <strong>{{ owner }}</strong>/<strong>{{ repo }}</strong> not found.
+			It may not have been created yet.
+		</p>
+	</div>
+</div>
+{% endif %}
+
+<script>
+	const repository_id = "{{ repository.id }}";
+</script>
+
+<script src="{{ url_for('static', filename='/js/dashboard.js') }}" type="text/javascript"></script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{
+    "2deb52a3-95ac-428b-990a-372611c48f97": {
+        "_lines": 8,
+        "_fragment": "    numbers = [1, 2, 3]\n    total = 0\n    for n in numbers:\n        total += n\n    return total\n\n\ndef duplicate_three():\n",
+        "_files": [
+            {
+                "filename": "file_b.py",
+                "lines": {
+                    "From": 12,
+                    "To": 19
+                },
+                "columns": {
+                    "From": 5,
+                    "To": 23
+                }
+            },
+            {
+                "filename": "file_a.py",
+                "lines": {
+                    "From": 12,
+                    "To": 19
+                },
+                "columns": {
+                    "From": 5,
+                    "To": 23
+                }
+            }
+        ],
+        "_iteration": 0
+    },
+    "a36e8088-3ecc-4c96-9565-09c52752d1bb": {
+        "_lines": 5,
+        "_fragment": "    print(\"=== file_a.py ===\")\n    print(\"duplicate_one():\", duplicate_one())\n    print(\"duplicate_two():\", duplicate_two())\n    print(\"duplicate_three():\", duplicate_three())\n    print(\"unique_function_a():\", unique_function_a())\n",
+        "_files": [
+            {
+                "filename": "file_b.py",
+                "lines": {
+                    "From": 35,
+                    "To": 39
+                },
+                "columns": {
+                    "From": 30,
+                    "To": 11
+                }
+            },
+            {
+                "filename": "file_a.py",
+                "lines": {
+                    "From": 35,
+                    "To": 39
+                },
+                "columns": {
+                    "From": 30,
+                    "To": 11
+                }
+            }
+        ],
+        "_iteration": 0
+    }
+}

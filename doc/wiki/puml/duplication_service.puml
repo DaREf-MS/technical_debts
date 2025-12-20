@@ -1,0 +1,78 @@
+@startuml duplication_service
+hide circle
+skinparam classAttributeIconSize 0
+title Service CodeDuplicationService
+
+class "<<SQLAlchemy>>\nCodeFragment" as CodeFragment {
+    + id : Column<String>
+    + line_count : Column<Integer>
+    + text : Column<Text>
+    + ctor(text, line_count)
+}
+
+class "<<SQLAlchemy>>\nDuplication" as Duplication {
+    + id : Column<String>
+    + code_fragment_id : Column<String>
+    + file_id : Column<String>
+    + line_count : Column<Integer>
+    + from_line : Column<Integer>
+    + to_line : Column<Integer>
+    + from_column : Column<Integer>
+    + to_column : Column<Integer>
+    + ctor(code_fragment_id, file_id, line_count, line_domain, column_domain)
+    + lines() : ValueRange
+    + columns() : ValueRange
+}
+
+class CodeDuplicationService {
+    - facade : CodeDuplicationDatabaseFacade
+    + ctor(facade)
+    + insert(fragements, duplications)
+    + get_fragment_by_id(id) : CodeFragment
+    + get_reports_for_many_files(file_list) : dict<str, DuplicationReport>
+    + insert_from_report(report_list, file_list)
+}
+
+class CodeDuplicationDatabaseFacade {
+    + insert_many_fragments(fragments)
+    + insert_many_duplications(duplications)
+    + get_duplication_by_id(id) : CodeFragment
+    + get_fragments_for_many_files(file_list_iterator) : list<tuple<CodeFragment, Duplication>>
+}
+
+class DuplicationReport {
+    - lines : int
+    - fragment : str
+    - files : list<DuplicationReport.File>
+    + ctor(lines, fragment)
+    + add_file(file)
+    + get_lines() : int
+    + get_fragment() : str
+    + get_file_nb() : int
+}
+
+class DuplicationController {
+    - {static} singleton : DuplicationController
+    - service : CodeDuplicationService
+    - tools : dict<str, DuplicationToolInterface>
+    + ctor()
+    - load_service()
+    - load_tools()
+    + find_duplications(tool, dir, files)
+    + get_report_dict(files) : dict<str, DuplicationReport>
+    + get_tool_name_set() : set<str>
+    + {static} singleton() : DuplicationController
+}
+
+class "<<Abstract>>\nDuplicationToolInterface" as DuplicationToolInterface {
+    + read(dir, file_extensions): list<DuplicationReport>
+}
+
+DuplicationController -right-> CodeDuplicationService
+DuplicationController -down-* DuplicationToolInterface : "Composition"
+CodeDuplicationService -right-> CodeDuplicationDatabaseFacade
+CodeDuplicationService .up.> Duplication : "Crée"
+CodeDuplicationService .up.> CodeFragment : "Crée"
+CodeDuplicationService .up.> DuplicationReport : "Crée"
+
+@enduml

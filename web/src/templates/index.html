@@ -1,0 +1,68 @@
+{% extends "_base.html" %}
+
+{% block content %}
+
+<div class="landing-page-container mt-3">
+	<div class="text-center">
+		<h1>Technical Debt Analyzer</h1>
+		<p class="lead">
+			Analyze your codebase for technical debt indicators such as cyclomatic complexity.<br>
+			Enter a GitHub repository to get started!
+		</p>
+		<br>
+
+		<form action="{{ url_for('create_repository') }}" method="post" class="mb-4">
+			<div class="mb-3">
+				<label for="owner_input" class="form-label">Github Owner Username</label>
+				<input name="owner" type="text" class="form-control" placeholder="ex: torvalds" id="owner_input"
+					required>
+			</div>
+			<div class="mb-3">
+				<label for="repo_input" class="form-label">Github Repo Name</label>
+				<input name="name" type="text" class="form-control" placeholder="ex: linux" id="repo_input" required>
+			</div>
+			<!-- <div class="mb-3">
+			<label for="branch_input" class="form-label">Github Repo Branch Name</label>
+			<input name="repo" type="text" class="form-control" placeholder="ex: main" id="branch_input" aria-describedby="branch_optional_help">
+			<div id="branch_optional_help" class="form-text">Optional</div>
+		</div> -->
+
+			<button type="submit" class="btn btn-primary btn-lg btn-block">Analyze Repository</button>
+		</form>
+
+		<hr>
+
+		<div class="text-center">
+			<h3>Or view one of the following analyzed repositories</h3>
+			<p class="lead">
+				Analyze your codebase for technical debt indicators such as cyclomatic complexity.<br>
+				Enter a GitHub repository to get started!
+			</p>
+		</div>
+
+		{% if repositories %}
+		<div class="mt-4">
+			<h4 class="mb-2">Analyzed repositories</h4>
+			<ul class="list-group">
+				{% for repo in repositories %}
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<div>
+						<strong>{{ repo.owner }}</strong> / {{ repo.name }}
+						{% if repo.branch %}
+						<small class="text-muted">({{ repo.branch }})</small>
+						{% endif %}
+					</div>
+					<a class="btn btn-sm btn-outline-primary"
+						href="/dashboard/{{ repo.owner }}/{{ repo.name }}/">View</a>
+				</li>
+				{% endfor %}
+			</ul>
+		</div>
+		{% else %}
+		<div class="mt-4 text-center text-muted">
+			<p>No repositories analyzed yet. Use the form above to analyze one.</p>
+		</div>
+		{% endif %}
+	</div>
+
+	{% endblock %}

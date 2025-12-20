@@ -1,0 +1,44 @@
+@startuml recomm_json_encoder
+hide circle
+skinparam classAttributeIconSize 0
+title Classe utilitaire JsonEncoder
+
+class "<<Static>>\n<u>JsonEncoder" as JsonEncoder {
+    - raise_unsupported_type_exception(type_name)
+    - raise_invalid_dict_key_exception(type_name)
+    - enum_to_raw(_enum) : list
+    - dict_to_raw(_dict) : dict
+    - list_to_raw(_list) : list
+    - tuple_to_raw(_tuple) : list
+    - set_to_raw(_set) : list
+    - primitive_to_raw(primitive) : object
+    - object_to_raw(_obj) : object
+    + breakdown(obj) : object
+    + dump(obj) : str
+} 
+
+class "JsonEncoder.Interface" as JEInterface {
+    + encode() : object
+}
+
+class RecommendationReport {
+    -global : Summary
+    -files : list<Summary>
+    + ctor(global_summary, file_summaries)
+}
+
+class "RecommendationReport.Summary" as RRSummary {
+    + subject : str
+    + problems : set<str>
+    + recommendations : set<str>
+    + ctor(subject)
+    + add(problem_recomm) : Summary
+}
+
+RecommendationReport -down-|> JEInterface : "Étend"
+RRSummary -down-|> JEInterface : "Étend"
+RecommendationReport -left-o RRSummary : "Agrégation"
+JEInterface ... JsonEncoder : "Utilise"
+
+
+@enduml

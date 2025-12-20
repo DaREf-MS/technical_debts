@@ -1,0 +1,73 @@
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-text {
+    cursor: text;
+}
+
+.landing-page-container {
+    width: 500px;
+    margin: auto;
+}
+
+/* Metrics Table Styles */
+#metrics-table {
+    font-size: 0.95rem;
+}
+
+#metrics-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#metrics-table .detail-view {
+    background-color: #f8f9fa;
+}
+
+#metrics-table tr.detail-view + tr {
+    background-color: #ffffff;
+}
+
+/* Bootstrap Table detail icon styling */
+#metrics-table .detail-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #495057 !important;
+    font-weight: bold;
+}
+
+#metrics-table .detail-icon:hover {
+    color: #212529 !important;
+}
+
+#metrics-table tbody tr td .detail-icon::before {
+    color: #495057 !important;
+}
+
+/* Style the + and - icons */
+#metrics-table tbody tr td[class*="detail"] {
+    color: #495057 !important;
+}
+
+#metrics-table tbody tr td a.detail-icon {
+    text-decoration: none;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+/* Complexity badges */
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}

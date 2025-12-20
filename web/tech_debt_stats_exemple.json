@@ -1,0 +1,79 @@
+{
+    "_metrics": [
+        {
+            "risk": [
+                "LOW_RISK",
+                0
+            ],
+            "metrics": {
+                "average_complexity": 1.5,
+                "entities": 0.0,
+                "duplications": 2.0,
+                "duplicated_lines": 11.0
+            },
+            "priority": 0.55,
+            "filename": "file_b.py"
+        },
+        {
+            "risk": [
+                "LOW_RISK",
+                0
+            ],
+            "metrics": {
+                "average_complexity": 1.8181818181818181,
+                "entities": 27.0,
+                "duplications": 0.0,
+                "duplicated_lines": 0.0
+            },
+            "priority": 0.603030303030303,
+            "filename": "annotated_functions.py"
+        },
+        {
+            "risk": [
+                "LOW_RISK",
+                0
+            ],
+            "metrics": {
+                "average_complexity": 2.4,
+                "entities": 0.0,
+                "duplications": 0.0,
+                "duplicated_lines": 0.0
+            },
+            "priority": 0.4,
+            "filename": "complexity_test.py"
+        },
+        {
+            "risk": [
+                "LOW_RISK",
+                0
+            ],
+            "metrics": {
+                "average_complexity": 1.5,
+                "entities": 0.0,
+                "duplications": 2.0,
+                "duplicated_lines": 11.0
+            },
+            "priority": 0.55,
+            "filename": "file_a.py"
+        }
+    ],
+    "_maximums": {
+        "average_complexity": 2.4,
+        "entities": 27.0,
+        "duplications": 2.0,
+        "duplicated_lines": 11.0
+    },
+    "_averages": {
+        "average_complexity": 1.8045454545454545,
+        "entities": 6.75,
+        "duplications": 1.0,
+        "duplicated_lines": 5.5
+    },
+    "_medians": {
+        "average_complexity": 1.6590909090909092,
+        "entities": 0.0,
+        "duplications": 1.0,
+        "duplicated_lines": 5.5
+    },
+    "_i": 0
+}

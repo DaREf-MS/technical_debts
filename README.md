@@ -1,69 +1,209 @@
-# React + TypeScript + Vite
+## Technical Debt Analyzer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### How to run the application:
 
-Currently, two official plugins are available:
+1. Navigate to the ```web``` folder
+2. Add a ```.env``` file with your Github token (Based on the .env.example)
+3. Navigate to the root of the project
+4. ```sudo docker compose build```
+5. ```sudo docker compose up -d```
+6. Go to localhost in your browser
+7. To disable application type ```docker compose down```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### How to generate a Github token
 
-## Expanding the ESLint configuration
+1. Open the following url ```https://github.com/settings/tokens```
+2. Generate a new token (classic)
+3. Give full repo access to the token
+4. Generate the token
+5. Copy the token to the .env file
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Component Diagram
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```mermaid
+flowchart LR
+	%% Clients
+	Browser[Browser / User]
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+	%% Docker Compose Services
+	subgraph Docker[Docker Compose]
+		direction LR
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+		subgraph Nginx[nginx container]
+			direction TB
+			RP[Nginx Reverse Proxy]
+			StaticVol[(Mounted static volume)]
+		end
+
+		subgraph Web[web container]
+			direction TB
+			Gunicorn[Gunicorn + Flask app]
+
+			subgraph Controllers
+				direction TB
+				repoCtrl[repository_controller]
+				metricsCtrl[metrics_controller]
+				commitCtrl[commit_controller]
+				identCtrl[identifiable_entity_controller]
+			end
+
+			subgraph Services
+				direction TB
+				repoSvc[repository_service]
+				branchSvc[branch_service]
+				commitSvc[commit_service]
+				metricsSvc[metrics_service]
+				complexitySvc[complexity_service]
+				duplicateSvc[duplicate_code_service]
+				fileSvc[file_service]
+				funcSvc[function_service]
+				identSvc[identifiable_entity_service]
+				ghSvc[github_service]
+			end
+
+			subgraph Models[SQLAlchemy models]
+				direction TB
+				ormModels[(tables & ORM)]
+			end
+		end
+
+		subgraph DB[postgres container]
+			direction TB
+			Postgres[(PostgreSQL)]
+		end
+	end
+
+	%% External dependency
+	GitHub[(GitHub Repos/API)]
+
+	%% Flows
+	Browser -->|HTTP| RP
+	RP -->|proxy_pass| Gunicorn
+	RP -->|/static| StaticVol
+
+	Gunicorn --> repoCtrl
+	Gunicorn --> metricsCtrl
+	Gunicorn --> commitCtrl
+	Gunicorn --> identCtrl
+
+	repoCtrl --> repoSvc
+	metricsCtrl --> metricsSvc
+	commitCtrl --> commitSvc
+	identCtrl --> identSvc
+
+	repoSvc --> ormModels
+	branchSvc --> ormModels
+	commitSvc --> ormModels
+	metricsSvc --> ormModels
+	complexitySvc --> ormModels
+	duplicateSvc --> ormModels
+	fileSvc --> ormModels
+	funcSvc --> ormModels
+	identSvc --> ormModels
+
+	ormModels -->|SQL| Postgres
+	Gunicorn -->|SQLAlchemy| Postgres
+
+	ghSvc -->|clone/fetch| GitHub
+	commitSvc --> ghSvc
+	branchSvc --> ghSvc
+	repoSvc --> ghSvc
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Class Diagram
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```mermaid
+classDiagram
+		class Repository {
+			+id: string(36)
+			+owner: text
+			+name: text
+		}
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+		class Branch {
+			+id: string(36)
+			+repository_id: string(36)
+			+name: text
+		}
+
+		class Commit {
+			+id: string(36)
+			+branch_id: string(36)
+			+sha: text
+			+date: datetime
+		}
+
+		class File {
+			+id: string(36)
+			+commit_id: string(36)
+			+name: text
+		}
+
+		class Function {
+			+id: string(36)
+			+file_id: string(36)
+			+name: text
+			+line_position: int
+		}
+
+		class Complexity {
+			+id: string(36)
+			+function_id: string(36)
+			+value: int
+		}
+
+		class Coverage {
+			+id: string(36)
+			+function_id: string(36)
+			+value: int
+		}
+
+		class Size {
+			+id: string(36)
+			+function_id: string(36)
+			+value: int
+		}
+
+		class FileTestCoverage {
+			+id: string(36)
+			+file_id: string(36)
+			+value: int
+		}
+
+		class FunctionTestCoverage {
+			+id: string(36)
+			+function_id: string(36)
+			+value: int
+		}
+
+		class Tests {
+			+id: string(36)
+			+passing_test_number: int
+			+failing_test_number: int
+		}
+
+		class FileEntities {
+			+id: string(36)
+			+identifiable_entity_id: string(36)
+			+file_id: string(36)
+			+line_position: int
+		}
+
+		class IdentifableEntity {
+			+id: string(36)
+			+name: text
+		}
+
+		Branch --> Repository : repository_id
+		Commit --> Branch : branch_id
+		File --> Commit : commit_id
+		Function --> File : file_id
+		Complexity --> Function : function_id
+		Coverage --> Function : function_id
+		Size --> Function : function_id
+		FileTestCoverage --> File : file_id
+		FunctionTestCoverage --> Function : function_id
+		Tests --> Branch
+		FileEntities --> File : file_id
+		FileEntities --> IdentifableEntity : identifiable_entity_id
 ```

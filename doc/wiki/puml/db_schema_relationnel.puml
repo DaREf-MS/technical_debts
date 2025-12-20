@@ -1,0 +1,162 @@
+@startuml db_schema_relationnel
+title Schéma relationnel
+hide circle
+skinparam classAttributeIconSize 0
+
+!define pk <b><color:#000000>P K\\t</color></b>
+!define fk <b><color:#000000>F K\\t</color></b>
+!define cl <b><color:#000000>   \\t</color></b>
+!define nl <b><color:#098229> N \\t</color></b>
+
+object user {
+    pk id : string(36)
+    ---
+    username : text
+    email : text
+    password_hash : text
+    first_name : text
+    last_name : text
+    is_active : bool
+    is_admin : bool
+    created_at : datetime
+    last_login : datetime
+    reset_token : text
+    reset_token_expiry : datetime
+}
+user "0..*" -right-> "1" repository_access : accède
+
+object repository_access {
+    pk id : string(36)
+    ---
+    fk user_id : string(35)
+    fk repository_id : string(36)
+    ---
+    can_read : bool
+    can_write : bool
+    granted_at : datetime
+    granted_by_id : string(36)
+}
+
+object repository {
+    pk id : string(36)
+    ---
+    cl owner : text
+    cl name : text
+}
+repository "0..*" -left-> "1" repository_access : est accédé par
+
+
+object branch {
+    pk id : string(36)
+    ---
+    fk repository_id : string(36)
+    ---
+    cl name : text
+}
+branch "1..*" -left-> "1" repository : subdivise
+
+object commit {
+    pk id : string(36)
+    ---
+    fk branch_id : string(36)
+    ---
+    cl sha : text
+    cl date : datetime
+    cl author : text
+    nl message : text
+}
+commit "1..*" -left-> "1" branch : versionne
+
+object file {
+    pk id : string(36)
+    ---
+    fk commit_id : string(36)
+    ---
+    cl name : text
+}
+file "0..*" -left-> "1" commit : est contenu par
+
+object function {
+    pk id : string(36)
+    ---
+    fk file_id : string(36)
+    ---
+    cl name : string(36)
+    cl line_position : integer
+}
+function "0..*" -up-> "1" file : est regroupé dans
+
+object complexity {
+    pk id : string(36)
+    ---
+    fk function_id : string(36)
+    ---
+    cl value : integer
+}
+complexity "1" -up-> "1" function : décrit
+
+object identifiable_entity {
+    pk id : string(36) 
+    ---
+    cl name : text
+}
+
+object file_identifiable_entity {
+    pk id : string(36)
+    ---
+    fk file_id : string(36)
+    fk identifiable_entity_id : string(36)
+    ---
+    cl line_position : integer
+}
+
+file_identifiable_entity "0..*" -down-> "1" file : associe
+file_identifiable_entity "0..*" -up-> "1" identifiable_entity : associe
+
+object code_fragment {
+    pk id : string(36)
+    ---
+    cl text : text
+    cl line_count : integer
+}
+
+object duplication {
+    pk id : string(36)
+    ---
+    fk file_id : string(36)
+    fk code_fragment_id : string(36)
+    ---
+    cl line_count
+    cl from_line : Integer
+    cl to_line : Integer
+    cl from_column : Integer
+    cl to_column : Integer
+}
+
+duplication "0..*" -left-> "1" file : associe
+duplication "0..*" -down-> "1" code_fragment : associe
+
+object complexity_count {
+    pk id : string(36)
+    ---
+    fk commit_id : string(36)
+    ---
+    cl total_complexity : integer
+    cl function_count : integer
+    cl average_complexity : float
+}
+
+complexity_count "1" -up-> "1" commit : décrit
+
+object identifiable_entity_count {
+    pk id : string(36)
+    ---
+    fk commit_id : string(36)
+    fk identifiable_entity_id : string(36)
+    ---
+    cl count : integer
+}
+
+identifiable_entity_count "0..*" -down-> "1" commit : associe
+identifiable_entity_count "0..*" -up-> "1" identifiable_entity : associe
+@enduml

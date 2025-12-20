@@ -1,0 +1,63 @@
+@startuml recomm_generator
+hide circle
+skinparam classAttributeIconSize 0
+title Générateur de recommandations
+
+class RecommendationGenerator {
+    + generate(problem, recommendation, mapping, is_problem) : Pair<str, str>
+    + global_risk(complexities) : Pair<str, str>
+    + global_duplication(duplications) : Pair<str, str>
+    + global_bug(entities, total_file_nb) : Pair<str, str>
+    + file_avg_risk(complexity) : Pair<str, str>
+    + file_func_risk(complexity) : Pair<str, str>
+    + file_func_nb(complexity) : Pair<str, str>
+}
+
+class EntityReport {
+    - {static} FIELDS 
+    + file_name : str
+    + entity_name : str
+    + line_position : int
+
+    - validate_keys(entities : dict)
+    + load(entities : dict) : EntityReport
+}
+
+class FileComplexityReport {
+    + complexity : float
+    + filename : str
+    + functions : list<FunctionComplexityReport>
+    + ctor(filename) 
+    + update_complexity()
+    + load(functions) : FileComplexityReport
+}
+
+class FunctionComplexityReport {
+    - {static} FIELDS
+    + file : str
+    + function : str
+    + start_line : int 
+    + cyclomatic_complexity : int
+    - validate_keys(func : dict)
+    + load(func : dict) : EntityReport
+}
+
+class DuplicationReport {
+    - lines : int
+    - fragment : str
+    - files : list<DuplicationReport.File>
+    + ctor(lines, fragment)
+    + add_file(file)
+    + get_lines() : int
+    + get_fragment() : str
+    + get_file_nb() : int
+}
+
+RecommendationGenerator .up.> EntityReport : "Utilise"
+RecommendationGenerator .down.> FileComplexityReport : "Utilise"
+RecommendationGenerator .down.> FunctionComplexityReport : "Utilise"
+RecommendationGenerator .up.> DuplicationReport : "Utilise"
+FileComplexityReport -right-o FunctionComplexityReport: "Agrégation"
+
+
+@enduml

@@ -1,0 +1,12 @@
+{
+    "python-envs.pythonProjects": [
+        {
+            "path": "web/src",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ],
+    "python.analysis.extraPaths": [
+        "./web"
+    ]
+}

@@ -1,0 +1,35 @@
+@startuml duplication_db
+hide circle
+skinparam classAttributeIconSize 0
+
+!define pk <b><color:#000000>P K\\t</color></b>
+!define fk <b><color:#000000>F K\\t</color></b>
+!define cl <b><color:#000000>   \\t</color></b>
+
+object file {
+    pk id : String(36)
+    fk commit_id : String(36)
+    cl name : Text
+}
+
+object duplication {
+    pk id : String(36)
+    fk file_id : String(36)
+    fk code_fragment_id : String(36)
+    cl line_count : Integer
+    cl from_line : Integer
+    cl to_line : Integer
+    cl from_column : Integer
+    cl to_column : Integer
+}
+
+object code_fragment {
+    pk id : String(36)
+    cl line_count : Integer
+    cl text : Text
+}
+
+duplication "*" -left-> "1" file : "     "
+duplication "*" -right-> "1" code_fragment : "      "
+
+@enduml

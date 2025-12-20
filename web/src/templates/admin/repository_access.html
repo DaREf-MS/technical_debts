@@ -1,0 +1,191 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="container my-4">
+	<h1 class="mb-4">Repository Access Management</h1>
+	
+	{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+			{% for category, message in messages %}
+				<div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				</div>
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+	
+	<div class="row">
+		<div class="col-md-4">
+			<div class="card shadow mb-4">
+				<div class="card-header">
+					<h5 class="mb-0">Grant Access</h5>
+				</div>
+				<div class="card-body">
+					<form method="POST" action="{{ url_for('admin_grant_repository_access') }}">
+						<div class="mb-3">
+							<label for="user_id" class="form-label">User</label>
+							<select class="form-select" id="user_id" name="user_id" required>
+								<option value="">Select user...</option>
+								{% for user in users %}
+								<option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+								{% endfor %}
+							</select>
+						</div>
+						
+						<div class="mb-3">
+							<label for="repository_id" class="form-label">Repository</label>
+							<select class="form-select" id="repository_id" name="repository_id" required>
+								<option value="">Select repository...</option>
+								{% for repo in repositories %}
+								<option value="{{ repo.id }}">{{ repo.owner }}/{{ repo.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						
+						<div class="mb-3 form-check">
+							<input type="checkbox" class="form-check-input" id="can_read" name="can_read" checked>
+							<label class="form-check-label" for="can_read">Read Access</label>
+						</div>
+						
+						<div class="mb-3 form-check">
+							<input type="checkbox" class="form-check-input" id="can_write" name="can_write">
+							<label class="form-check-label" for="can_write">Write Access</label>
+						</div>
+						
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="bi bi-plus-circle"></i> Grant Access
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+		
+		<div class="col-md-8">
+			<div class="card shadow">
+				<div class="card-header">
+					<h5 class="mb-0">Current Access Grants</h5>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th>User</th>
+									<th>Repository</th>
+									<th>Permissions</th>
+									<th>Granted</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody id="access-grants-tbody">
+								{% for access in access_grants %}
+								<tr data-repo-id="{{ access.repository_id }}">
+									<td>{{ access.user.username }}</td>
+									<td>{{ access.repository.owner }}/{{ access.repository.name }}</td>
+									<td>
+										{% if access.can_read %}
+											<span class="badge bg-info">Read</span>
+										{% endif %}
+										{% if access.can_write %}
+											<span class="badge bg-warning">Write</span>
+										{% endif %}
+									</td>
+									<td>{{ access.granted_at.strftime('%Y-%m-%d') if access.granted_at else '-' }}</td>
+									<td>
+										<form method="POST" action="{{ url_for('admin_revoke_repository_access', access_id=access.id) }}" 
+											  onsubmit="return confirm('Are you sure you want to revoke this access?');">
+											<button type="submit" class="btn btn-sm btn-outline-danger">
+												<i class="bi bi-x-circle"></i> Revoke
+											</button>
+										</form>
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const repoSelect = document.getElementById('repository_id');
+	const userSelect = document.getElementById('user_id');
+	const accessTableBody = document.getElementById('access-grants-tbody');
+	const allTableRows = Array.from(accessTableBody.querySelectorAll('tr'));
+	
+	// Store original user options
+	const allUserOptions = Array.from(userSelect.options).slice(1); // Skip the first "Select user..." option
+	
+	// Get access grants data
+	const accessGrants = [
+		{% for access in access_grants %}
+		{
+			userId: '{{ access.user_id }}',
+			repositoryId: '{{ access.repository_id }}'
+		},
+		{% endfor %}
+	];
+	
+	function updateUserList() {
+		const selectedRepoId = repoSelect.value;
+		const currentSelectedUserId = userSelect.value; // Save current selection
+		
+		// Clear current options except the first one
+		userSelect.innerHTML = '<option value="">Select user...</option>';
+		
+		if (!selectedRepoId) {
+			// If no repo selected, show all users
+			allUserOptions.forEach(option => {
+				userSelect.appendChild(option.cloneNode(true));
+			});
+			// Show all access grants
+			allTableRows.forEach(row => {
+				row.style.display = '';
+			});
+			// Restore user selection if any
+			if (currentSelectedUserId) {
+				userSelect.value = currentSelectedUserId;
+			}
+			return;
+		}
+		
+		// Show all users but mark those who already have access
+		allUserOptions.forEach(option => {
+			const userId = option.value;
+			const hasAccess = accessGrants.some(grant => 
+				grant.userId === userId && grant.repositoryId === selectedRepoId
+			);
+			
+			const newOption = option.cloneNode(true);
+			if (hasAccess) {
+				newOption.text = option.text + ' (already has access)';
+			}
+			userSelect.appendChild(newOption);
+		});
+		
+		// Restore user selection if any
+		if (currentSelectedUserId) {
+			userSelect.value = currentSelectedUserId;
+		}
+		
+		// Filter access grants table to show only selected repository
+		allTableRows.forEach(row => {
+			const rowRepoId = row.getAttribute('data-repo-id');
+			if (rowRepoId === selectedRepoId) {
+				row.style.display = '';
+			} else {
+				row.style.display = 'none';
+			}
+		});
+	}
+	
+	// Update user list when repository changes
+	repoSelect.addEventListener('change', updateUserList);
+});
+</script>
+{% endblock %}

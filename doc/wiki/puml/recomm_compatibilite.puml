@@ -1,0 +1,45 @@
+@startuml recomm_compatibilite
+hide circle
+skinparam classAttributeIconSize 0
+title Compatibilité
+
+class EntityReport {
+    - {static} FIELDS
+    + file_name : str
+    + entity_name : str
+    + line_position : int
+
+    - validate_keys(entities : dict)
+    + load(entities : dict) : EntityReport
+}
+
+class FileComplexityReport {
+    + complexity : float
+    + filename : str
+    + functions : list<FunctionComplexityReport>
+    + ctor(filename) 
+    + update_complexity()
+    + load(functions) : FileComplexityReport
+}
+
+class FunctionComplexityReport {
+    - {static} FIELDS
+    + file : str
+    + function : str
+    + start_line : int 
+    + cyclomatic_complexity : int
+    - validate_keys(func : dict)
+    + load(func : dict) : EntityReport
+}
+
+class CompatibilityService {
+    + convert_func_complexity_objects(func_list) : dict<str, list<FunctionComplexityReport>>
+    + convert_file_complexity_objects(file_list) : dict<str, FileComplexityReport>
+    + convert_entity_objects(entity_list) : dict<str, list<EntityReport>>
+}
+
+CompatibilityService .down.> FileComplexityReport : "Crée"
+CompatibilityService .down.> FunctionComplexityReport : "Crée"
+CompatibilityService .down.> EntityReport : "Crée"
+FileComplexityReport -right-o FunctionComplexityReport : "Agrégation"
+@enduml
